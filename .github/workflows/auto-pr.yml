@@ -293,8 +293,8 @@ jobs:
               const removeSet = new Set(removeLabels || [])
               for (const x of addSet) removeSet.delete(x)
 
-              const current = await github.rest.pulls.get({ owner, repo, pull_number })
-              const currentLabels = new Set((current.data.labels || []).map((l) => l.name))
+              const payloadPR = context.payload.pull_request || context.payload.issue || {}
+              const currentLabels = new Set((payloadPR.labels || []).map((l) => l.name))
 
               if (skipIfSame) {
                 for (const name of addSet) {
@@ -821,8 +821,8 @@ jobs:
               const removeSet = new Set(removeLabels || [])
               for (const x of addSet) removeSet.delete(x)
 
-              const current = await github.rest.pulls.get({ owner, repo, pull_number })
-              const currentLabels = new Set((current.data.labels || []).map((l) => l.name))
+              const payloadPR = context.payload.pull_request || context.payload.issue || {}
+              const currentLabels = new Set((payloadPR.labels || []).map((l) => l.name))
 
               if (skipIfSame) {
                 for (const name of addSet) {
