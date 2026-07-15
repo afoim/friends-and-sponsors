@@ -205,7 +205,8 @@ jobs:
                   timeout: 15000
                 })
               } catch (e) {
-                if (e.status !== 404) throw e
+                const errMsg = e?.stderr?.toString() || e?.message || String(e)
+                if (!errMsg.includes('404')) throw e
               }
             }
 
