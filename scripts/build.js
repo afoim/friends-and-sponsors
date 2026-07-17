@@ -4,6 +4,8 @@
  * Scans data/ for individual JSON files, validates, sorts,
  * and generates friends.json / sponsors.json at repo root.
  *
+ * Relative avatar paths are resolved against DOMAIN.
+ *
  * Usage: node scripts/build.js
  */
 
@@ -16,8 +18,22 @@ const DATA_FRIENDS = path.join(ROOT, 'data', 'friends');
 const DATA_SPONSORS = path.join(ROOT, 'data', 'sponsors');
 const IMG_SPONSORS = path.join(ROOT, 'data', 'sponsors-img');
 
+/** Domain used to resolve relative avatar paths in output */
+const DOMAIN = 'https://raw-fas.2x.nz';
+
 function isNonEmptyString(v) { return typeof v === 'string' && v.trim().length > 0; }
 function isNullOrString(v)   { return v === null || typeof v === 'string'; }
+
+/**
+ * Resolve a relative avatar path to an absolute URL.
+ * Only transforms strings starting with '/'; leaves null, absolute URLs, etc. untouched.
+ */
+function resolveAvatar(avatar) {
+  if (typeof avatar === 'string' && avatar.startsWith('/')) {
+    return DOMAIN + avatar;
+  }
+  return avatar;
+}
 
 function loadAndValidate(dir, label, rules) {
   if (!fs.existsSync(dir)) { console.warn(`⚠️  ${dir} not found`); return []; }
@@ -55,6 +71,10 @@ const sponsors = loadAndValidate(DATA_SPONSORS, 'sponsors', [
   d => !isNonEmptyString(d.amount) ? ['amount required'] : [],
 ]);
 sponsors.sort((a, b) => b.date.localeCompare(a.date));
+
+// ── Resolve relative avatar paths ──
+friends.forEach(d => { d.avatar = resolveAvatar(d.avatar); });
+sponsors.forEach(d => { d.avatar = resolveAvatar(d.avatar); });
 
 // ── Write ──
 fs.mkdirSync(OUT, { recursive: true });
