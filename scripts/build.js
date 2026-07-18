@@ -61,7 +61,12 @@ const friends = loadAndValidate(DATA_FRIENDS, 'friends', [
   d => !isNullOrString(d.avatar) ? ['avatar must be string or null'] : [],
   d => !isNonEmptyString(d.url) ? ['url required'] : [],
 ]);
-friends.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+// VIP first, then alphabetical by name
+friends.sort((a, b) => {
+  if (a.vip && !b.vip) return -1;
+  if (!a.vip && b.vip) return 1;
+  return a.name.localeCompare(b.name, 'zh-CN');
+});
 
 console.log('\n📦 Sponsors...');
 const sponsors = loadAndValidate(DATA_SPONSORS, 'sponsors', [
