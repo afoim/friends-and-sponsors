@@ -24,6 +24,14 @@ const DOMAIN = 'https://raw-fas.2x.nz';
 function isNonEmptyString(v) { return typeof v === 'string' && v.trim().length > 0; }
 function isNullOrString(v)   { return v === null || typeof v === 'string'; }
 
+/** Normalize dates like "2026-1-12" → "2026-01-12" for correct sort order. */
+function normalizeDate(dateStr) {
+  if (typeof dateStr !== 'string') return dateStr;
+  const m = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!m) return dateStr;
+  return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+}
+
 /**
  * Resolve a relative avatar path to an absolute URL.
  * Only transforms strings starting with '/'; leaves null, absolute URLs, etc. untouched.
@@ -75,6 +83,8 @@ const sponsors = loadAndValidate(DATA_SPONSORS, 'sponsors', [
   d => !isNonEmptyString(d.date) ? ['date required'] : [],
   d => !isNonEmptyString(d.amount) ? ['amount required'] : [],
 ]);
+// Apply date normalization before sorting
+sponsors.forEach(d => { d.date = normalizeDate(d.date); });
 sponsors.sort((a, b) => b.date.localeCompare(a.date));
 
 // ── Resolve relative avatar paths ──
